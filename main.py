@@ -1,12 +1,44 @@
 import requests
 import asyncio
 
+from bs4 import BeautifulSoup
 from telebot import types
 from telebot.async_telebot import AsyncTeleBot
 
 token = "6587599801:AAHiSvV9fTZGGHHPv-od8Ohw_G0JdhJF_Kg"
 bot = AsyncTeleBot(token)
 
+url = "https://airmundo.com/en/blog/airport-codes-european-airports/"
+
+data = []
+airport_countries = []
+def get_airport():
+    r = requests.get(url)
+    soup = BeautifulSoup(r.text, 'html.parser')
+    a = soup.find('div', class_="tablescroll").find('tbody').find_all('tr')
+
+    for tr in a:
+        text_elements = [element.get_text() for element in tr.find_all('td')]
+        data.append(text_elements)
+
+    for airport_info in data:
+        if airport_info[1] not in airport_countries:
+            airport_countries.append(airport_info[1])
+        else:
+            continue
+
+def get_airport_keyboard():
+    get_airport()
+    airport_keyboard = []
+    keyboard_row = []
+    for country in airport_countries:
+        keyboard_row.append(types.InlineKeyboardButton(country, callback_data=f"Country:{country}"))
+        if len(keyboard_row) == 3:
+            airport_keyboard.append(keyboard_row)
+            keyboard_row = []
+    if keyboard_row:
+        airport_keyboard.append(keyboard_row)
+    return airport_keyboard
 # function for recieving short info
 def get_info(type, icao):
     response = requests.get(f"https://beta.aviationweather.gov/cgi-bin/data/{type}.php?ids={icao.upper()}")
@@ -22,7 +54,13 @@ async def fn_start(message):
     await bot.send_message(message.chat.id, "Привіт. Я допоможу тобі отримати дані про METAR та TAF на будь-якому аеродромі світу. "
                                             "Для цього тобі потрібно ввести номер ICAO (неважливо яким регістром). "
                                             "\n\nЯкщо потрібні підказки - сміливо тисни /info☺️")
-
+@bot.message_handler(commands=['info'])
+async def fn_info(message):
+    data.clear()
+    airport_countries.clear()
+    airport_keyboard = get_airport_keyboard()
+    await bot.send_message(message.chat.id, "Привіт. Спробуй Обрати країну, та отримаєш інформацію про наявні аеропорти",
+                           reply_markup=types.InlineKeyboardMarkup(airport_keyboard))
 @bot.message_handler(content_types=['text'])
 async def fn_start(message):
     if len(message.text) != 4:
@@ -83,6 +121,11 @@ async def fn_calldata(call):
         ]
         await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id,
                                     text=f"{get_info(type, icao)}", reply_markup=types.InlineKeyboardMarkup(keyboard))
+    elif call.data == "return":
+        airport_keyboard = get_airport_keyboard()
+        await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id,
+                                    text="Привіт. Спробуй Обрати країну, та отримаєш інформацію про наявні аеропорти",
+                                    reply_markup=types.InlineKeyboardMarkup(airport_keyboard))
 
     elif call.data.startswith("back"):
         icao = call.data.split(":")[1]
@@ -95,5 +138,21 @@ async def fn_calldata(call):
         ]
         await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id,
                                     text=f"{info}", reply_markup=types.InlineKeyboardMarkup(inline_keyboard))
+
+    elif call.data.startswith("Country"):
+        keyboard = [
+            [
+                types.InlineKeyboardButton("Back", callback_data="return")
+            ]
+        ]
+        icao_message = []
+        airport_country = call.data.split(":")[1]
+        for airports_info in data:
+            if airport_country in airports_info[1]:
+                icao_message.append(f"*{airports_info[0]}* - `{airports_info[3]}`")
+        await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id,
+                                    text=f"У {airport_country} є наступні аеропорти: \n\n" + '\n'.join(icao_message),
+                                    parse_mode="Markdown",
+                                    reply_markup=types.InlineKeyboardMarkup(keyboard))
 
 asyncio.run(bot.infinity_polling(skip_pending=True))
