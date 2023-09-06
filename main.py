@@ -12,6 +12,7 @@ url = "https://airmundo.com/en/blog/airport-codes-european-airports/"
 
 data = []
 airport_countries = []
+icao_message = []
 def get_airport():
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
@@ -26,7 +27,6 @@ def get_airport():
             airport_countries.append(airport_info[1])
         else:
             continue
-
 def get_airport_keyboard():
     get_airport()
     airport_keyboard = []
@@ -39,6 +39,13 @@ def get_airport_keyboard():
     if keyboard_row:
         airport_keyboard.append(keyboard_row)
     return airport_keyboard
+
+def get_airport_icao(airport_country):
+
+    for airports_info in data:
+        if airport_country in airports_info[1]:
+            icao_message.append(f"*{airports_info[0]}* - `{airports_info[3]}`")
+    return icao_message
 # function for recieving short info
 def get_info(type, icao):
     response = requests.get(f"https://beta.aviationweather.gov/cgi-bin/data/{type}.php?ids={icao.upper()}")
@@ -67,13 +74,15 @@ async def fn_start(message):
         return
     icao = message.text.upper()
     info_about_airport = get_info("stationinfo", icao)
+    if not info_about_airport:
+        return await bot.send_message(message.chat.id, "Некоректно введено дані. Спробуй скористатись /info "
+                                                       "для отримання достовірної інформації про аеропорти")
     inline_keyboard = [
         [
             types.InlineKeyboardButton("METAR", callback_data=f"Type:metar-{message.text}"),
             types.InlineKeyboardButton("TAF", callback_data=f"Type:taf-{message.text}")
         ]
     ]
-
     await bot.send_message(message.chat.id, f"{info_about_airport}", reply_markup=types.InlineKeyboardMarkup(inline_keyboard))
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -122,10 +131,14 @@ async def fn_calldata(call):
         await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id,
                                     text=f"{get_info(type, icao)}", reply_markup=types.InlineKeyboardMarkup(keyboard))
     elif call.data == "return":
+        icao_message.clear()
+        data.clear()
+        airport_countries.clear()
         airport_keyboard = get_airport_keyboard()
         await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id,
                                     text="Привіт. Спробуй Обрати країну, та отримаєш інформацію про наявні аеропорти",
                                     reply_markup=types.InlineKeyboardMarkup(airport_keyboard))
+
 
     elif call.data.startswith("back"):
         icao = call.data.split(":")[1]
@@ -140,19 +153,17 @@ async def fn_calldata(call):
                                     text=f"{info}", reply_markup=types.InlineKeyboardMarkup(inline_keyboard))
 
     elif call.data.startswith("Country"):
+
         keyboard = [
             [
                 types.InlineKeyboardButton("Back", callback_data="return")
             ]
         ]
-        icao_message = []
         airport_country = call.data.split(":")[1]
-        for airports_info in data:
-            if airport_country in airports_info[1]:
-                icao_message.append(f"*{airports_info[0]}* - `{airports_info[3]}`")
+        port_info = get_airport_icao(airport_country)
+
         await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id,
-                                    text=f"У {airport_country} є наступні аеропорти: \n\n" + '\n'.join(icao_message),
-                                    parse_mode="Markdown",
-                                    reply_markup=types.InlineKeyboardMarkup(keyboard))
+                                    text=f"У {airport_country} є наступні аеропорти: \n\n" + '\n'.join(port_info),
+                                    parse_mode="Markdown", reply_markup=types.InlineKeyboardMarkup(keyboard))
 
 asyncio.run(bot.infinity_polling(skip_pending=True))
