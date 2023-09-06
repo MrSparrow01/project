@@ -1,12 +1,12 @@
 import requests
 import asyncio
+import os
 
 from bs4 import BeautifulSoup
 from telebot import types
 from telebot.async_telebot import AsyncTeleBot
 
-token = "6587599801:AAHiSvV9fTZGGHHPv-od8Ohw_G0JdhJF_Kg"
-bot = AsyncTeleBot(token)
+bot = AsyncTeleBot(os.environ['TOKEN'])
 
 url = "https://airmundo.com/en/blog/airport-codes-european-airports/"
 
