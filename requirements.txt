@@ -1,5 +1,5 @@
 requests==2.31.0
 asyncio==3.4.3
-bs4=0.0.1
+bs4==0.0.1
 telebot==0.0.5
 pyTelegramBotAPI==4.12.0
