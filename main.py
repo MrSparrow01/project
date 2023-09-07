@@ -66,8 +66,9 @@ async def fn_info(message):
     data.clear()
     airport_countries.clear()
     airport_keyboard = get_airport_keyboard()
-    await bot.send_message(message.chat.id, "Привіт. Спробуй Обрати країну, та отримаєш інформацію про наявні аеропорти",
-                           reply_markup=types.InlineKeyboardMarkup(airport_keyboard))
+    await bot.send_message(message.chat.id, "Для зручності, було додано дані про аеропорти Европи. "
+                                            "Інші ти можеш знайти [тут](https://telegra.ph/ICAO-aeroportіv-svіtu-09-07-3)",
+                           reply_markup=types.InlineKeyboardMarkup(airport_keyboard), parse_mode="Markdown")
 @bot.message_handler(content_types=['text'])
 async def fn_start(message):
     if len(message.text) != 4:
