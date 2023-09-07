@@ -8,11 +8,11 @@ telegraph.create_account(short_name='Project')
 with open('icao_dict.json', 'r', encoding='utf-8') as json_file:
     data = json.load(json_file)
 
-# Створення статті
-article_title = "ICAO аеропортів світу"
 article_content = []
 country_content = []
 
+# Створення статті
+article_title = "ICAO аеропортів світу"
 # Додавання посилань на сторінки країн у зміст
 article_content.append('<ul>')
 
