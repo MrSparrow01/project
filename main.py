@@ -68,7 +68,8 @@ async def fn_info(message):
     airport_keyboard = get_airport_keyboard()
     await bot.send_message(message.chat.id, "Для зручності, було додано дані про аеропорти Европи.",
                            reply_markup=types.InlineKeyboardMarkup(airport_keyboard), parse_mode="Markdown")
-    await bot.send_message(message.chat.id, "Дані про інші аеропорти ти можеш знайти за [посиланням](https://telegra.ph/ICAO-aeroportіv-svіtu-09-07-3)")
+    await bot.send_message(message.chat.id, "Дані про інші аеропорти ти можеш знайти за [посиланням](https://telegra.ph/ICAO-aeroportіv-svіtu-09-07-3)",
+                           parse_mode="Markdown")
 
 @bot.message_handler(commands=['radar24'])
 async def fn_info(message):
