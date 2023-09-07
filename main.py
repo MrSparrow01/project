@@ -69,6 +69,11 @@ async def fn_info(message):
     await bot.send_message(message.chat.id, "Для зручності, було додано дані про аеропорти Европи. "
                                             "Інші ти можеш знайти [тут](https://telegra.ph/ICAO-aeroportіv-svіtu-09-07-3)",
                            reply_markup=types.InlineKeyboardMarkup(airport_keyboard), parse_mode="Markdown")
+
+@bot.message_handler(commands=['radar24'])
+async def fn_info(message):
+    await bot.send_message(message.chat.id, "Посилання на [FlightRadar](https://www.flightradar24.com/)",
+                           disable_web_page_preview=True, parse_mode="Markdown")
 @bot.message_handler(content_types=['text'])
 async def fn_start(message):
     if len(message.text) != 4:
@@ -137,7 +142,8 @@ async def fn_calldata(call):
         airport_countries.clear()
         airport_keyboard = get_airport_keyboard()
         await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id,
-                                    text="Привіт. Спробуй Обрати країну, та отримаєш інформацію про наявні аеропорти",
+                                    text="Для зручності, було додано дані про аеропорти Европи. "
+                                            "Інші ти можеш знайти [тут](https://telegra.ph/ICAO-aeroportіv-svіtu-09-07-3)",
                                     reply_markup=types.InlineKeyboardMarkup(airport_keyboard))
 
 
