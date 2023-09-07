@@ -144,7 +144,7 @@ async def fn_calldata(call):
         await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id,
                                     text="Для зручності, було додано дані про аеропорти Европи. "
                                             "Інші ти можеш знайти [тут](https://telegra.ph/ICAO-aeroportіv-svіtu-09-07-3)",
-                                    reply_markup=types.InlineKeyboardMarkup(airport_keyboard))
+                                    reply_markup=types.InlineKeyboardMarkup(airport_keyboard), parse_mode="Markdown")
 
 
     elif call.data.startswith("back"):
