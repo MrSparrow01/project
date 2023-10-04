@@ -17,10 +17,6 @@ for row in sheet.iter_rows(min_row=2, values_only=True):  # Починаємо �
         icao_dict[country_name] = []
     icao_dict[country_name].append(f"{icao_airport} - {icao_code}")
 
-# Виводимо отриманий словник
-for country, code in icao_dict.items():
-    print(f'{country}: {code}')
-
 # Зберігаємо словник у JSON-файл
 import json
 

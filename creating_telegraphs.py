@@ -30,12 +30,9 @@ for country, airports in data.items():
     article_content.append(f'<li><a href="{country_url}">{country}</a></li>')
 
 article_content.append('</ul>')
-
-# Збірка контенту статті
-article_content = '\n\n'.join(data)
-
+print(article_content)
 # Створення статті на Telegraph
-article = telegraph.create_page(title=article_title, html_content=article_content)
+article = telegraph.create_page(title=article_title, html_content=''.join(article_content))
 
 # Отримання посилання на статтю
 article_url = article['url']
