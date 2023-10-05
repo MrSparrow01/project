@@ -81,16 +81,19 @@ async def fn_start(message):
         return
     icao = message.text.upper()
     info_about_airport = get_info("stationinfo", icao)
-    if not info_about_airport:
-        return await bot.send_message(message.chat.id, "Некоректно введено дані. Спробуй скористатись /info "
-                                                       "для отримання достовірної інформації про аеропорти")
+
     inline_keyboard = [
         [
             types.InlineKeyboardButton("METAR", callback_data=f"Type:metar-{message.text}"),
             types.InlineKeyboardButton("TAF", callback_data=f"Type:taf-{message.text}")
         ]
     ]
-    await bot.send_message(message.chat.id, f"{info_about_airport}", reply_markup=types.InlineKeyboardMarkup(inline_keyboard))
+    message = await bot.send_message(message.chat.id, f"{info_about_airport}", reply_markup=types.InlineKeyboardMarkup(inline_keyboard))
+
+    if not message:
+        return await bot.send_message(message.chat.id, "Некоректно введено дані. Спробуй скористатись /info "
+                                                       "для отримання достовірної інформації про аеропорти")
+
 
 @bot.callback_query_handler(func=lambda call: True)
 async def fn_calldata(call):
