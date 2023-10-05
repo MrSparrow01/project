@@ -78,7 +78,9 @@ async def fn_info(message):
 @bot.message_handler(content_types=['text'])
 async def fn_start(message):
     if len(message.text) != 4:
-        return
+        return await bot.send_message(message.chat.id,
+                                      "Код аеропорту ІКАО — *чотирилітерний* унікальний індивідуальний ідентифікатор аеропорта",
+                                      parse_mode="Markdown")
     icao = message.text.upper()
     info_about_airport = get_info("stationinfo", icao)
 
@@ -88,10 +90,10 @@ async def fn_start(message):
             types.InlineKeyboardButton("TAF", callback_data=f"Type:taf-{message.text}")
         ]
     ]
-    message = await bot.send_message(message.chat.id, f"{info_about_airport}", reply_markup=types.InlineKeyboardMarkup(inline_keyboard))
-
-    if not message:
-        return await bot.send_message(message.chat.id, "Некоректно введено дані. Спробуй скористатись /info "
+    try:
+        await bot.send_message(message.chat.id, f"{info_about_airport}", reply_markup=types.InlineKeyboardMarkup(inline_keyboard))
+    except:
+        await bot.send_message(message.chat.id, "Некоректно введено дані. Спробуй скористатись /info "
                                                        "для отримання достовірної інформації про аеропорти")
 
 
