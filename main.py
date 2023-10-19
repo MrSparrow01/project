@@ -48,12 +48,12 @@ def get_airport_icao(airport_country):
     return icao_message
 # function for recieving short info
 def get_info(type, icao):
-    response = requests.get(f"https://beta.aviationweather.gov/cgi-bin/data/{type}.php?ids={icao.upper()}")
+    response = requests.get(f"https://aviationweather.gov/api/data/{type}.php?ids={icao.upper()}")
     return response.text
 
 # function for recieving full info
 def get_decoded_info(type, icao):
-    response = requests.get(f"https://beta.aviationweather.gov/cgi-bin/data/{type}.php?ids={icao.upper()}&format=decoded")
+    response = requests.get(f"https://aviationweather.gov/api/data/{type}.php?ids={icao.upper()}&format=decoded")
     return response.text
 
 @bot.message_handler(commands=['start'])
@@ -99,7 +99,7 @@ async def fn_start(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 async def fn_calldata(call):
-
+    print(call.data)
     if call.data.startswith("decode"):
         """
         Originally, call.data looks like decode:{metar}-{KORD}.
@@ -148,10 +148,8 @@ async def fn_calldata(call):
         airport_countries.clear()
         airport_keyboard = get_airport_keyboard()
         await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.id,
-                                    text="Для зручності, було додано дані про аеропорти Европи. "
-                                            "Інші ти можеш знайти [тут](https://telegra.ph/ICAO-aeroportіv-svіtu-09-07-3)",
-                                    reply_markup=types.InlineKeyboardMarkup(airport_keyboard), parse_mode="Markdown")
-
+                                    text="Для зручності, було додано дані про аеропорти Европи. ",
+                                    reply_markup=types.InlineKeyboardMarkup(airport_keyboard))
 
     elif call.data.startswith("back"):
         icao = call.data.split(":")[1]
