@@ -4,6 +4,7 @@ First of all, you need to have all the imported modules installed on your comput
 
 import requests
 import asyncio
+import os
 
 import telebot.types
 from bs4 import BeautifulSoup
@@ -15,8 +16,7 @@ In this part of the code, we declare the variable TOKEN, which contains our bot'
 A token is like a key that allows us to connect to and control the bot.
 """
 
-TOKEN = "6587599801:AAHiSvV9fTZGGHHPv-od8Ohw_G0JdhJF_Kg"
-bot = AsyncTeleBot(TOKEN)
+bot = AsyncTeleBot(os.environ['TOKEN'])
 
 url = "https://airmundo.com/en/blog/airport-codes-european-airports/"
 
