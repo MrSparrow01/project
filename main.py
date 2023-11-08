@@ -208,7 +208,7 @@ async def fn_calldata(call):
 
     elif call.data.startswith("back"):
         icao = call.data.split(":")[1]
-        info = get_info("stationinfo", icao)
+        info = get_info("airport", icao)
         inline_keyboard = [
             [
                 types.InlineKeyboardButton("METAR", callback_data=f"Type:metar-{icao}"),
