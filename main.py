@@ -138,7 +138,7 @@ async def fn_start(message):
                                       "Код аеропорту ІКАО — *чотирилітерний* унікальний індивідуальний ідентифікатор аеропорта",
                                       parse_mode="Markdown")
     icao = message.text.upper()
-    info_about_airport = get_info("stationinfo", icao)
+    info_about_airport = get_info("airport", icao)
 
     inline_keyboard = [
         [
@@ -149,8 +149,8 @@ async def fn_start(message):
     try:
         await bot.send_message(message.chat.id, f"{info_about_airport}", reply_markup=types.InlineKeyboardMarkup(inline_keyboard))
     except:
-        await bot.send_message(message.chat.id, "Некоректно введено дані. Спробуй скористатись /info "
-                                                       "для отримання достовірної інформації про аеропорти")
+        await bot.send_message(message.chat.id, "Виникла помилка при завантажені даних. Спробуй /info "
+                                                       "чи спробуй пізніше")
 
 
 @bot.callback_query_handler(func=lambda call: True)
