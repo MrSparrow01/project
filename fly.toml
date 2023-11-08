@@ -1,10 +1,12 @@
-# fly.toml app configuration file generated for projectmetar on 2023-09-06T23:15:28+03:00
+# fly.toml app configuration file generated for projectmetar on 2023-11-08T14:14:52+02:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
 app = "projectmetar"
 primary_region = "waw"
+
+[build]
 
 [http_service]
   internal_port = 8080

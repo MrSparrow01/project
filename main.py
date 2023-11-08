@@ -1,12 +1,22 @@
+"""
+First of all, you need to have all the imported modules installed on your computer. It will not work without them.
+"""
+
 import requests
 import asyncio
-import os
 
+import telebot.types
 from bs4 import BeautifulSoup
 from telebot import types
 from telebot.async_telebot import AsyncTeleBot
 
-bot = AsyncTeleBot(os.environ['TOKEN'])
+"""
+In this part of the code, we declare the variable TOKEN, which contains our bot's token. 
+A token is like a key that allows us to connect to and control the bot.
+"""
+
+TOKEN = "6587599801:AAHiSvV9fTZGGHHPv-od8Ohw_G0JdhJF_Kg"
+bot = AsyncTeleBot(TOKEN)
 
 url = "https://airmundo.com/en/blog/airport-codes-european-airports/"
 
@@ -14,6 +24,9 @@ data = []
 airport_countries = []
 icao_message = []
 def get_airport():
+    """
+    The function responsible for obtaining the names and ICAO of European airports.
+    """
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
     a = soup.find('div', class_="tablescroll").find('tbody').find_all('tr')
@@ -28,6 +41,12 @@ def get_airport():
         else:
             continue
 def get_airport_keyboard():
+    """
+    The function is used to create and return an inline keyboard with the names of European countries.
+    The name of the country is passed to each button as callback_data.
+    This is necessary in order to get the ICAO codes of the airports when you click on the button.
+    :return: airport_keyboard
+    """
     get_airport()
     airport_keyboard = []
     keyboard_row = []
@@ -41,23 +60,54 @@ def get_airport_keyboard():
     return airport_keyboard
 
 def get_airport_icao(airport_country):
-
+    """
+    The function uses the data from the 'data' variable to generate an SMS in the form of a country
+    when you click on the corresponding country:
+    Airport - ICAO
+    :param airport_country: airport_country
+    :return: icao_message
+    """
     for airports_info in data:
         if airport_country in airports_info[1]:
             icao_message.append(f"*{airports_info[0]}* - `{airports_info[3]}`")
     return icao_message
 # function for recieving short info
 def get_info(type, icao):
+    """
+    the function accesses the weather website through the API and, according to the
+    transmitted data - 'type' (metar, taf or stationinfo) and 'icao',
+    returns a response from thtae website with the relevant data.
+    :param type: 'metar', 'taf' or 'stationinfo'
+    :param icao: ICAO code
+    :return: response from site
+    """
     response = requests.get(f"https://aviationweather.gov/api/data/{type}.php?ids={icao.upper()}")
     return response.text
 
 # function for recieving full info
 def get_decoded_info(type, icao):
+    """
+    The function works in a similar way to the previous function: it accesses the weather website via API and,
+    according to the transmitted data - 'type' (metar or taf) and 'icao',
+    returns the decoded weather data from the website.
+    :param type: 'metar', 'taf' or 'stationinfo'
+    :param icao: ICAO code
+    :return: decoded response from site
+    """
     response = requests.get(f"https://aviationweather.gov/api/data/{type}.php?ids={icao.upper()}&format=decoded")
     return response.text
 
 @bot.message_handler(commands=['start'])
 async def fn_start(message):
+    """
+    This is part of the bot launch processing. When the user presses the /start command, the bot automatically creates commands for easy operation.
+    :param message: message from user
+    """
+    await bot.set_my_commands([
+        telebot.types.BotCommand("/start", "Запуск"),
+        telebot.types.BotCommand("/info", "Допомога"),
+        telebot.types.BotCommand("/radar24", "FlightRadar24")
+    ])
     await bot.send_message(message.chat.id, "Привіт. Я допоможу тобі отримати дані про METAR та TAF на будь-якому аеродромі світу. "
                                             "Для цього тобі потрібно ввести номер ICAO (неважливо яким регістром). "
                                             "\n\nЯкщо потрібні підказки - сміливо тисни /info☺️")
@@ -77,6 +127,12 @@ async def fn_info(message):
                            disable_web_page_preview=True, parse_mode="Markdown")
 @bot.message_handler(content_types=['text'])
 async def fn_start(message):
+    """
+    a text message that is not a command is processed in this cleaner. If the length is not equal to 4,
+    an error message will be displayed. Otherwise, the process of creating inline buttons and
+    displaying the corresponding messages takes place
+    :param message: message from user
+    """
     if len(message.text) != 4:
         return await bot.send_message(message.chat.id,
                                       "Код аеропорту ІКАО — *чотирилітерний* унікальний індивідуальний ідентифікатор аеропорта",
@@ -99,7 +155,6 @@ async def fn_start(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 async def fn_calldata(call):
-    print(call.data)
     if call.data.startswith("decode"):
         """
         Originally, call.data looks like decode:{metar}-{KORD}.
