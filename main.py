@@ -107,7 +107,7 @@ async def fn_start(message):
     await bot.set_my_commands([
         telebot.types.BotCommand("/start", "Запуск"),
         telebot.types.BotCommand("/info", "Допомога"),
-        telebot.types.BotCommand("/airsigmet", "AIR/SIGMET"),
+        #telebot.types.BotCommand("/airsigmet", "AIR/SIGMET"),
         telebot.types.BotCommand("/radar24", "FlightRadar24")
     ])
     await bot.send_message(message.chat.id, "Привіт. Я допоможу тобі отримати дані про METAR та TAF на будь-якому аеродромі світу. "
@@ -128,7 +128,7 @@ async def fn_info(message):
     await bot.send_message(message.chat.id, "Посилання на [FlightRadar](https://www.flightradar24.com/)",
                            disable_web_page_preview=True, parse_mode="Markdown")
 
-@bot.message_handler(commands=['airsigmet'])
+"""@bot.message_handler(commands=['airsigmet'])
 async def fn_airsigmet(message):
     import re
 
@@ -149,6 +149,8 @@ async def fn_airsigmet(message):
     await bot.edit_message_text(chat_id=message.chat.id, message_id=message.id,
                                 text=f"Актуальні AIR/SIGMET можна знайти за [посиланням]({article['url']})",
                                 parse_mode="Markdown")
+"""
+
 @bot.message_handler(content_types=['text'])
 async def fn_start(message):
     """
