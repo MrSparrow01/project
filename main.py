@@ -5,6 +5,7 @@ First of all, you need to have all the imported modules installed on your comput
 import requests
 import asyncio
 import os
+from telegraph import Telegraph
 
 import telebot.types
 from bs4 import BeautifulSoup
@@ -106,6 +107,7 @@ async def fn_start(message):
     await bot.set_my_commands([
         telebot.types.BotCommand("/start", "Запуск"),
         telebot.types.BotCommand("/info", "Допомога"),
+        telebot.types.BotCommand("/airsigmet", "AIR/SIGMET"),
         telebot.types.BotCommand("/radar24", "FlightRadar24")
     ])
     await bot.send_message(message.chat.id, "Привіт. Я допоможу тобі отримати дані про METAR та TAF на будь-якому аеродромі світу. "
@@ -125,6 +127,28 @@ async def fn_info(message):
 async def fn_info(message):
     await bot.send_message(message.chat.id, "Посилання на [FlightRadar](https://www.flightradar24.com/)",
                            disable_web_page_preview=True, parse_mode="Markdown")
+
+@bot.message_handler(commands=['airsigmet'])
+async def fn_airsigmet(message):
+    import re
+
+    message = await bot.send_message(message.chat.id, "Отримання даних з https://aviationweather.gov ...",
+                                     disable_web_page_preview=True)
+    telegraph = Telegraph()
+    telegraph.create_account(short_name='Project')
+    data = requests.get("https://aviationweather.gov/api/data/isigmet?format=raw").text.split("----------------------")
+    content = []
+    for airsigmet in data:
+        try:
+            hazard = re.search(r'(Hazard: [A-z]+)', airsigmet)[0]
+            airsigmet = airsigmet.replace(f'{hazard}', '\n')
+            content.append(f"<br>{hazard}<br><p>{''.join(airsigmet)}</p>")
+        except:
+            continue
+    article = telegraph.create_page(title="Current AIR/SIGMET", html_content=''.join(content))
+    await bot.edit_message_text(chat_id=message.chat.id, message_id=message.id,
+                                text=f"Актуальні AIR/SIGMET можна знайти за [посиланням]({article['url']})",
+                                parse_mode="Markdown")
 @bot.message_handler(content_types=['text'])
 async def fn_start(message):
     """
@@ -143,7 +167,9 @@ async def fn_start(message):
     inline_keyboard = [
         [
             types.InlineKeyboardButton("METAR", callback_data=f"Type:metar-{message.text}"),
-            types.InlineKeyboardButton("TAF", callback_data=f"Type:taf-{message.text}")
+            types.InlineKeyboardButton("TAF", callback_data=f"Type:taf-{message.text}"),
+            #types.InlineKeyboardButton("SIGMET", callback_data=f"Type:sigmet-{message.text}"),
+            #types.InlineKeyboardButton("AIRMET", callback_data=f"Type:airmet-{message.text}"),
         ]
     ]
     try:
@@ -151,7 +177,6 @@ async def fn_start(message):
     except:
         await bot.send_message(message.chat.id, "Виникла помилка при завантажені даних. Спробуй /info "
                                                        "чи спробуй пізніше")
-
 
 @bot.callback_query_handler(func=lambda call: True)
 async def fn_calldata(call):
